@@ -345,22 +345,15 @@
 			 * If parent div width greater thans embed iframe use the max widht
 			 * - works on youtubes and vimeo
 			 */
+			/*모바일을 위해서 폭이 640보다 작을때 출력 사이즈 조절: 원본- 640 * 360*/
 			if(settings.maxWidth) {
-				var post_width = oembedContainer.parent().width();
-				if(post_width < settings.maxWidth) {
-					var iframe_width_orig = $('iframe', oembedContainer).width();
+				var post_width = oembedContainer.parent().width(); //iframe의 부모 폭 = maxWidth
+				if(post_width < 640) {
 					var iframe_height_orig = $('iframe', oembedContainer).height();
-					var ratio = iframe_width_orig / post_width;
-					$('iframe', oembedContainer).width(iframe_width_orig / ratio);
+					var ratio = 640 / post_width;
+					$('iframe', oembedContainer).width(post_width);
 					$('iframe', oembedContainer).height(iframe_height_orig / ratio);
-				} else {
-					if(settings.maxWidth) {
-						$('iframe', oembedContainer).width(settings.maxWidth);
-					}
-					if(settings.maxHeight) {
-						$('iframe', oembedContainer).height(settings.maxHeight);
-					}
-				}
+				} 
 			}
 			break;
 		}
@@ -495,8 +488,8 @@
 			templateRegex: /.*(?:v\=|be\/|embed\/)([\w\-]+)&?.*/,
 			embedtag: {
 				tag: 'iframe',
-				width: '425',
-				height: '349'
+				width: '640',
+				height: '360'
 			}
 		}),
 
