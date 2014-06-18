@@ -774,7 +774,15 @@ class documentItem extends Object
 		// If not specify its height, create a square
 		if(!$height) $height = $width;
 		// Return false if neither attachement nor image files in the document
-		if(!$this->get('uploaded_count') && !preg_match("!<img!is", $this->get('content'))) return;
+		//content에 youtube link있는지 확인
+		$utube = false;
+		$utube_regex = '@https?://(?:www\.)?(?:youtube\.com|youtu\.be|plus\.google\.com)/(?:watch\?v=|watch\?.+&v=|user/[^/]+?#p/\w/\w/\w/|v/|embed/(?:watch\?feature=player_embedded&v=)?|\+youtube/posts/|)((?:[\w-]{11}))@';
+		if(preg_match($utube_regex, $this->get('content'))) $utube = true;
+		//content에 img tag있는지 확인
+		$imgtag = false;
+		if(preg_match("!<img!is", $this->get('content'))) $imgtag = true;
+		//첨부파일이 없음 && img tag 없음 && youtube link 없을때 return
+		if(!$this->get('uploaded_count') && !$imgtag && !$utube) return;
 		// Get thumbnai_type information from document module's configuration
 		if(!in_array($thumbnail_type, array('crop','ratio')))
 		{
@@ -823,26 +831,44 @@ class documentItem extends Object
 		{
 			$content = $this->get('content');
 			$target_src = null;
-			preg_match_all("!src=(\"|')([^\"' ]*?)(\"|')!is", $content, $matches, PREG_SET_ORDER);
-			$cnt = count($matches);
-			for($i=0;$i<$cnt;$i++)
-			{
-				$target_src = trim($matches[$i][2]);
-				if(!preg_match("/\.(jpg|png|jpeg|gif|bmp)$/i",$target_src)) continue;
-				if(preg_match('/\/(common|modules|widgets|addons|layouts)\//i', $target_src)) continue;
-				else
-				{
-					if(!preg_match('/^(http|https):\/\//i',$target_src)) $target_src = Context::getRequestUri().$target_src;
 
+			if($imgtag) {
+				preg_match_all('/<\s*img[^>]+src\s*=\s*["\']?([^"\']*)/i', $content, $matches, PREG_SET_ORDER);
+				$cnt = count($matches);
+				for($i=0;$i<$cnt;$i++)
+				{
+					$target_src = trim($matches[$i][1]);
+					if(preg_match('/\/(common|modules|widgets|addons|layouts)\//i', $target_src)) continue;
+					else
+					{
+						if(!preg_match('/^(http|https):\/\//i',$target_src)) $target_src = Context::getRequestUri().$target_src;
+
+						$tmp_file = sprintf('./files/cache/tmp/%d', md5(rand(111111,999999).$this->document_srl));
+						if(!is_dir('./files/cache/tmp')) FileHandler::makeDir('./files/cache/tmp');
+						FileHandler::getRemoteFile($target_src, $tmp_file);
+						if(!file_exists($tmp_file)) continue;
+						else
+						{
+							$source_file = $tmp_file;
+							$is_tmp_file = true;
+							break;
+						}
+					}
+				}
+			}
+			else if($utube) {
+				preg_match_all($utube_regex, $content, $matches, PREG_SET_ORDER);
+				$cnt = count($matches);
+				for($i=0;$i<$cnt;$i++)
+				{
 					$tmp_file = sprintf('./files/cache/tmp/%d', md5(rand(111111,999999).$this->document_srl));
 					if(!is_dir('./files/cache/tmp')) FileHandler::makeDir('./files/cache/tmp');
+
+					$target_src = 'http://img.youtube.com/vi/'.trim($matches[$i][1]).'/hqdefault.jpg';
 					FileHandler::getRemoteFile($target_src, $tmp_file);
 					if(!file_exists($tmp_file)) continue;
 					else
 					{
-						list($_w, $_h, $_t, $_a) = @getimagesize($tmp_file);
-						if($_w<$width || $_h<$height) continue;
-
 						$source_file = $tmp_file;
 						$is_tmp_file = true;
 						break;
@@ -907,6 +933,10 @@ class documentItem extends Object
 		$check_files = true;
 		}
 		 */
+		 
+		//Check Youtube
+		$utube_regex = '@https?://(?:www\.)?(?:youtube\.com|youtu\.be|plus\.google\.com)/(?:watch\?v=|watch\?.+&v=|user/[^/]+?#p/\w/\w/\w/|v/|embed/(?:watch\?feature=player_embedded&v=)?|\+youtube/posts/|)((?:[\w-]{11}))@';
+		if(preg_match($utube_regex, $this->get('content'))) $buffs[] = "youtube";
 
 		// Check the attachment
 		if($this->hasUploadedFiles()) $buffs[] = "file";
@@ -937,7 +967,7 @@ class documentItem extends Object
 		$buff = array();
 		foreach($buffs as $key => $val)
 		{
-			$buff[] = sprintf('<img src="%s%s.gif" alt="%s" title="%s" style="margin-right:2px;" />', $path, $val, $val, $val);
+			$buff[] = sprintf('<img src="%s%s.png" alt="%s" title="%s" style="margin-right:2px;" />', $path, $val, $val, $val);
 		}
 		return implode('', $buff);
 	}
