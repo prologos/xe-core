@@ -4,7 +4,29 @@
 		<table name="member_group_member" alias="member_group" />
 	</tables>
 	<columns>
-		<column name="member.*" />
+		<column name="member.member_srl" />
+		<column name="member.user_id" />
+		<column name="member.email_address" />
+		<column name="member.password" />
+		<column name="member.email_id" />
+		<column name="member.email_host" />
+		<column name="member.user_name" />
+		<column name="member.nick_name" />
+		<column name="member.find_account_question" />
+		<column name="member.find_account_answer" />
+		<column name="member.homepage" />
+		<column name="member.blog" />
+		<column name="member.birthday" />
+		<column name="member.allow_mailing" />
+		<column name="member.allow_message" />
+		<column name="member.denied" />
+		<column name="member.limit_date" />
+		<column name="member.regdate" />
+		<column name="member.last_login" />
+		<column name="member.change_password_date" />
+		<column name="member.is_admin" />
+		<column name="CAST(member.description AS varchar(max)) AS description" />
+		<column name="CAST(member.extra_vars AS varchar(max)) AS extra_vars" />
 		<column name="site_srl" />
 		<column name="group_srl" />
 	</columns>
@@ -33,6 +55,31 @@
 	</conditions>
 	<groups>
 		<group column="member.member_srl" />
+		<group column="member.user_id" />
+		<group column="member.email_address" />
+		<group column="member.password" />
+		<group column="member.email_id" />
+		<group column="member.email_host" />
+		<group column="member.user_name" />
+		<group column="member.nick_name" />
+		<group column="member.find_account_question" />
+		<group column="member.find_account_answer" />
+		<group column="member.homepage" />
+		<group column="member.blog" />
+		<group column="member.birthday" />
+		<group column="member.allow_mailing" />
+		<group column="member.allow_message" />
+		<group column="member.denied" />
+		<group column="member.limit_date" />
+		<group column="member.regdate" />
+		<group column="member.last_login" />
+		<group column="member.change_password_date" />
+		<group column="member.is_admin" />
+		<group column="CAST(member.description AS varchar(max))" />
+		<group column="CAST(member.extra_vars AS varchar(max))" />
+		<group column="member.list_order" />
+		<group column="member_group.site_srl" />
+		<group column="member_group.group_srl" />
 	</groups>
 	<navigation>
 		<index var="sort_index" default="member.list_order" order="sort_order" />
